@@ -3630,6 +3630,11 @@ void remoteBinaryWrite(char* p)
     sscanf(p, "%x,%x:", &address, &count);
     //  monprintf("Binary write for %08x %d\n", address, count);
 
+    if(count < 0 || strstr(p, ":") == NULL)
+    {
+        remotePutPacket("E00");
+        return;
+    }
     p = strchr(p, ':');
     p++;
     for (int i = 0; i < count; i++) {
@@ -3656,7 +3661,11 @@ void remoteMemoryWrite(char* p)
     int count;
     sscanf(p, "%x,%x:", &address, &count);
     //  monprintf("Memory write for %08x %d\n", address, count);
-
+    if(count < 0 || strstr(p, ":") == NULL)
+    {
+        remotePutPacket("E00");
+        return;
+    }
     p = strchr(p, ':');
     p++;
     for (int i = 0; i < count; i++) {
@@ -3947,7 +3956,7 @@ void remoteReadRegister(char* p)
     sscanf(p, "%x", &r);
     if(r < 0 || r > 15)
     {
-        remotePutPacket("E 00");
+        remotePutPacket("E00");
         return;
     }
     char buffer[1024];
@@ -4002,9 +4011,9 @@ void remoteWriteRegister(char* p)
 
     sscanf(p, "%x=", &r);
 
-    if(r < 0 || r > 15)
+    if(r < 0 || r > 15 || strstr(p, "=") == NULL)
     {
-        remotePutPacket("E 00");
+        remotePutPacket("E00");
         return;
     }
 
