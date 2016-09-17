@@ -603,7 +603,7 @@ void debuggerEditRegister(int n, char** args)
     if (n == 3) {
         int r = getRegisterNumber(args[1]);
         uint32_t val;
-        if (r > 16) {
+        if (r < 0 || r > 16) {
             {
                 sprintf(monbuf, "Error: Register must be valid (0-16)\n");
                 monprintf(monbuf);
@@ -3630,7 +3630,7 @@ void remoteBinaryWrite(char* p)
     sscanf(p, "%x,%x:", &address, &count);
     //  monprintf("Binary write for %08x %d\n", address, count);
 
-    if(count < 0 || strstr(p, ":") == NULL)
+    if(strstr(p, ":") == NULL || count < 0)
     {
         remotePutPacket("E00");
         return;
@@ -3661,7 +3661,7 @@ void remoteMemoryWrite(char* p)
     int count;
     sscanf(p, "%x,%x:", &address, &count);
     //  monprintf("Memory write for %08x %d\n", address, count);
-    if(count < 0 || strstr(p, ":") == NULL)
+    if(strstr(p, ":") == NULL || count < 0 || count > 512)
     {
         remotePutPacket("E00");
         return;
@@ -3694,6 +3694,11 @@ void remoteMemoryRead(char* p)
     sscanf(p, "%x,%x:", &address, &count);
     //  monprintf("Memory read for %08x %d\n", address, count);
 
+    if(strstr(p, ":") == NULL || count < 0 || count > 512)
+    {
+        remotePutPacket("E00");
+        return;
+    }
     char buffer[1024];
 
     char* s = buffer;
@@ -3729,7 +3734,7 @@ void remoteStepOverRange(char* p)
 {
     uint32_t address;
     uint32_t final;
-    sscanf(p, "%x,%x", &address, & final);
+    sscanf(p, "%x,%x", &address, &final);
 
     remotePutPacket("OK");
 
